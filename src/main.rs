@@ -26,7 +26,7 @@ fn main() {
     let cfg = Config::new()
         .with_default_menu_bar(false)
         .with_custom_head("<link rel=\"stylesheet\" href=\"public/styles/index.css\">".to_string())
-        .with_window(WindowBuilder::default().with_title("Time Tracker"));
+        .with_window(WindowBuilder::default().with_title("Time Record Keeper"));
 
     let builder = LaunchBuilder::desktop().with_cfg(cfg);
     builder.launch(App);
