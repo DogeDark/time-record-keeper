@@ -1,15 +1,25 @@
 #![allow(non_snake_case)]
 
+use std::collections::HashMap;
+
 use chrono::{Local, NaiveDate};
 use dioxus::{
     desktop::{Config, WindowBuilder},
     prelude::*,
 };
 
-#[derive(Clone, Copy)]
+mod components;
+mod util;
+
+use components::{modals, Navbar};
+
+use crate::util::seconds_to_formatted;
+
+#[derive(Debug, Clone, PartialEq)]
 struct SavedRecord {
     date: NaiveDate,
     time: u32,
+    description: String,
 }
 
 fn main() {
@@ -23,49 +33,18 @@ fn main() {
 }
 
 fn App() -> Element {
-    let records = use_signal(Vec::<SavedRecord>::new);
+    // Record data
+    let mut records = use_signal(Vec::<SavedRecord>::new);
 
-    let mut records_reversed = records();
-    records_reversed.reverse();
-
-    rsx! {
-        Navbar { records }
-        div { class: "title", "Recorded Time" }
-        div {
-            id: "recordsContainer",
-
-            for record in records_reversed {
-                Record { date: record.date, seconds: record.time }
-            }
-        }
-    }
-}
-
-#[component]
-fn Record(date: NaiveDate, seconds: u32) -> Element {
-    let time_formatted = seconds_to_formatted(seconds);
-    rsx! {
-        div {
-            class: "record",
-            p { class: "date", "{date}" }
-            p { class: "time", "{time_formatted}" }
-        }
-    }
-}
-
-fn seconds_to_formatted(seconds: u32) -> String {
-    let hours = seconds / 3600;
-    let minutes = (seconds % 3600) / 60;
-    let seconds_final = seconds % 60;
-    format!("{:02}:{:02}:{:02}", hours, minutes, seconds_final)
-}
-
-#[component]
-fn Navbar(records: Signal<Vec<SavedRecord>>) -> Element {
+    // Timer data
     let mut timer_running = use_signal(|| false);
     let mut timer_start_date: Signal<Option<NaiveDate>> = use_signal(|| None);
     let mut seconds_elapsed = use_signal(|| 0 as u32);
 
+    // Modal
+    let mut show_modal = use_signal(|| false);
+
+    // Start the timer
     use_effect(move || {
         spawn_forever(async move {
             loop {
@@ -77,55 +56,111 @@ fn Navbar(records: Signal<Vec<SavedRecord>>) -> Element {
         });
     });
 
-    // Format timer button text
-    let (timer_text, timer_button_id) = match timer_running() {
-        true => ("STOP", "stopButton"),
-        false => ("START", "startButton"),
+    // Event Handlers
+    let on_timer_button_clicked = move |_| {
+        if timer_running() {
+            // Reset timer and save data
+            show_modal.set(true);
+        } else {
+            // Set timer start date
+            let date = Local::now().date_naive();
+            timer_start_date.set(Some(date));
+        }
+
+        // Flip timer bool
+        timer_running.toggle();
     };
 
-    // Format time
-    let time_elapsed = seconds_to_formatted(seconds_elapsed());
+    // Called when the save modal's save button is pressed.
+    let on_record_save = move |description: String| {
+        // Format
+        let mut final_desc = description;
+        if final_desc.is_empty() {
+            final_desc = String::from("No description.");
+        }
+
+        // Save
+        records.push(SavedRecord {
+            date: timer_start_date().unwrap_or(Local::now().date_naive()),
+            time: seconds_elapsed(),
+            description: final_desc,
+        });
+
+        // Reset timer
+        seconds_elapsed.set(0);
+        timer_start_date.set(None);
+        show_modal.set(false);
+    };
+
+    // Display logic
+    let mut records_reversed = records();
+    records_reversed.reverse();
+
+    rsx! {
+        if show_modal() {
+            modals::SaveRecordModal { on_record_save }
+        }
+
+        Navbar {
+            timer_running: timer_running(),
+            seconds_elapsed: seconds_elapsed(),
+            on_timer_button_clicked,
+        }
+
+        Records { records: records() }
+    }
+}
+
+#[component]
+fn Records(records: Vec<SavedRecord>) -> Element {
+    let mut dates_and_records: HashMap<String, Vec<SavedRecord>>= HashMap::new();
+
+    //records[0].date.to_string();
+
+    for record in records {
+        if let Some(data) = dates_and_records.get_mut(&record.date.to_string()) {
+            data.push(record);
+        } else {
+            let mut data = Vec::new();
+            data.push(record.clone());
+            dates_and_records.insert(record.date.to_string(), data);
+        }
+    }
+
+    let mut final_records: Vec<Element> = Vec::new();
+
+    let mut last_key = String::new();
+    for (key, value) in dates_and_records {
+        if key != last_key {
+            last_key = key.clone();
+            final_records.push(rsx! {
+                p { class: "recordDate", "{key}" }
+            });
+        }
+
+
+        for record in value {
+            let time_formatted = seconds_to_formatted(record.time);
+
+            final_records.push(rsx! {
+                div {
+                    class: "record",
+                    p { class: "time", "{time_formatted}" }
+                    p { class: "description", "{record.description}" }
+               }
+            });
+        }
+    }
 
     rsx! {
         div {
-            id: "navbar",
-            button {
-                class: "timerButton navItem",
-                id: "{timer_button_id}",
-                onclick: move |_| {
-                    if timer_running() {
-                        // Reset timer and save data
-
-                        records.push(SavedRecord {
-                            date: timer_start_date().unwrap_or(Local::now().date_naive()),
-                            time: seconds_elapsed(),
-                        });
-
-                        seconds_elapsed.set(0);
-                        timer_start_date.set(None);
-                    } else {
-                        // Set timer start date
-                        let date = Local::now().date_naive();
-                        timer_start_date.set(Some(date));
-                    }
-
-                    // Flip timer bool
-                    timer_running.toggle();
-                },
-                "{timer_text}"
+            id: "records",
+            p {
+                class: "title",
+                "Records"
             }
-
-            if timer_running() {
-                p {
-                    class: "navItem",
-                    "{time_elapsed}"
-                }
-            }
-
-            button {
-                class: "navItem",
-                id: "exportButton",
-                "EXPORT"
+            for data in final_records {
+                {data}
             }
         }
     }

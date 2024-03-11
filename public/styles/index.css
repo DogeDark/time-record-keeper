@@ -1,14 +1,3 @@
-body {
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  background-color: #181a1d;
-  color: #ffffff;
-  font-family: "Segoe UI";
-  margin: 10px;
-}
-
 #navbar {
   display: flex;
   flex-direction: row;
@@ -26,6 +15,7 @@ body {
 }
 #navbar .navItem:hover {
   transform: translate3d(0, -3px, 0);
+  cursor: pointer;
 }
 #navbar .timerButton {
   border-radius: 10px;
@@ -51,15 +41,88 @@ body {
   margin-left: auto;
 }
 
-.title {
-  margin-top: 25px;
-  font-size: 2em;
+#saveRecordModal {
+  display: block;
+  background-color: rgba(0, 0, 0, 0.5490196078);
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow-x: none;
+  overflow-y: auto;
+}
+#saveRecordModal #content {
+  background-color: #25282c;
+  border-radius: 10px;
+  width: 60vw;
+  margin: 15% auto;
+  padding: 20px;
+}
+#saveRecordModal #content #header {
+  font-weight: bold;
+  font-size: 1.4em;
+  margin-top: 0;
+  margin-bottom: 10px;
+  text-align: center;
+}
+#saveRecordModal #content .formField {
+  margin-top: 20px;
+  width: 100%;
+}
+#saveRecordModal #content .formField p {
+  margin-bottom: 10px;
+  font-weight: bold;
+  font-size: 0.9em;
+  letter-spacing: 0.2px;
+}
+#saveRecordModal #content .formField textarea {
+  box-sizing: border-box;
+  width: 100%;
+  border-radius: 10px;
+  background-color: #181a1d;
+  resize: vertical;
+  padding: 10px;
+  border-color: transparent;
+  color: #ffffff;
+  outline: none;
+  transition: border-color 0.6s;
+}
+#saveRecordModal #content .formField textarea:hover {
+  border-color: #0F89BD;
+}
+#saveRecordModal #content .formField textarea:focus {
+  border-color: #0F89BD;
+}
+#saveRecordModal #content .formField textarea.active {
+  border-color: #0F89BD;
+}
+#saveRecordModal #content #footer {
+  width: 100%;
+  margin-top: 20px;
+  display: flex;
+}
+#saveRecordModal #content #footer button {
+  margin-left: auto;
+  border-radius: 10px;
+  border: none;
+  background-color: #0F89BD;
+  color: #ffffff;
+  font-size: 1em;
+  width: 12vw;
+  padding: 10px;
+  transition: transform 0.3s;
+}
+#saveRecordModal #content #footer button:hover {
+  cursor: pointer;
+  transform: translate3d(0, -3px, 0);
 }
 
-#recordsContainer {
+#records {
   margin-top: 25px;
 }
-#recordsContainer .record {
+#records .record {
   padding: 10px;
   height: 30px;
   border-radius: 10px;
@@ -70,17 +133,32 @@ body {
   font-size: 1em;
   margin-bottom: 10px;
 }
-#recordsContainer .record .date {
+#records .record .time {
   margin-left: 20px;
   margin-top: 0;
   margin-bottom: 0;
 }
-#recordsContainer .record .time {
-  justify-self: end;
+#records .record .description {
   margin-left: auto;
   margin-right: 20px;
   margin-top: 0;
   margin-bottom: 0;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: #181a1d;
+  color: #ffffff;
+  font-family: "Segoe UI";
+  margin: 10px;
+}
+
+.title {
+  margin-top: 25px;
+  font-size: 2em;
 }
 
 /*# sourceMappingURL=index.css.map */

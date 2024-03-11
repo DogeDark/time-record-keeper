@@ -1,0 +1,28 @@
+#records{
+    margin-top: 25px;
+
+    .record {
+        padding: 10px;
+        height: 30px;
+        border-radius: 10px;
+        background-color: #222429;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        font-size: 1em;
+        margin-bottom: 10px;
+
+        .time {
+            margin-left: 20px;
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+
+        .description {
+            margin-left: auto;
+            margin-right: 20px;
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+    }
+}
