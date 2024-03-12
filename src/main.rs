@@ -1,7 +1,5 @@
 #![allow(non_snake_case)]
 
-use std::collections::HashMap;
-
 use chrono::{Local, NaiveDate};
 use dioxus::{
     desktop::{Config, WindowBuilder},
@@ -10,17 +8,10 @@ use dioxus::{
 
 mod components;
 mod util;
+mod model;
 
-use components::{modals, Navbar};
-
-use crate::util::seconds_to_formatted;
-
-#[derive(Debug, Clone, PartialEq)]
-struct SavedRecord {
-    date: NaiveDate,
-    time: u32,
-    description: String,
-}
+use model::SavedRecord;
+use components::{modals, Navbar, Records};
 
 fn main() {
     let cfg = Config::new()
@@ -92,10 +83,6 @@ fn App() -> Element {
         show_modal.set(false);
     };
 
-    // Display logic
-    let mut records_reversed = records();
-    records_reversed.reverse();
-
     rsx! {
         if show_modal() {
             modals::SaveRecordModal { on_record_save }
@@ -107,61 +94,6 @@ fn App() -> Element {
             on_timer_button_clicked,
         }
 
-        Records { records: records() }
-    }
-}
-
-#[component]
-fn Records(records: Vec<SavedRecord>) -> Element {
-    let mut dates_and_records: HashMap<String, Vec<SavedRecord>>= HashMap::new();
-
-    //records[0].date.to_string();
-
-    for record in records {
-        if let Some(data) = dates_and_records.get_mut(&record.date.to_string()) {
-            data.push(record);
-        } else {
-            let mut data = Vec::new();
-            data.push(record.clone());
-            dates_and_records.insert(record.date.to_string(), data);
-        }
-    }
-
-    let mut final_records: Vec<Element> = Vec::new();
-
-    let mut last_key = String::new();
-    for (key, value) in dates_and_records {
-        if key != last_key {
-            last_key = key.clone();
-            final_records.push(rsx! {
-                p { class: "recordDate", "{key}" }
-            });
-        }
-
-
-        for record in value {
-            let time_formatted = seconds_to_formatted(record.time);
-
-            final_records.push(rsx! {
-                div {
-                    class: "record",
-                    p { class: "time", "{time_formatted}" }
-                    p { class: "description", "{record.description}" }
-               }
-            });
-        }
-    }
-
-    rsx! {
-        div {
-            id: "records",
-            p {
-                class: "title",
-                "Records"
-            }
-            for data in final_records {
-                {data}
-            }
-        }
+        Records { records }
     }
 }
