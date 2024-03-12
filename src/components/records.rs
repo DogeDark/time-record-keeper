@@ -51,6 +51,14 @@ pub fn Records(records: Signal<Vec<SavedRecord>>) -> Element {
                 class: "title",
                 "Records"
             }
+
+            if final_records.is_empty() {
+                p { 
+                    id: "noRecordsText", 
+                    "You don't have any saved records. 😕"
+                }
+            }
+
             for data in final_records {
                 {data}
             }
