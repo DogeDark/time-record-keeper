@@ -1,13 +1,14 @@
 [package]
-name = "time-tracker"
+name = "time-record-keeper"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-chrono = "0.4.35"
+chrono = { version = "0.4.35", features = ["serde"] }
 dioxus = { git = "https://github.com/DioxusLabs/dioxus", features = [
     "desktop",
 ] }
+rusqlite = { version = "0.31.0", features = ["bundled", "chrono"] }
 tokio = { version = "1.36.0", features = ["time"] }
